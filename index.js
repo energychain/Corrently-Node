@@ -13,9 +13,9 @@ const ipfs = new IPFS(ipfsOptions)
 const ANNOUNCEMENT_CHANNEL="/orbitdb/QmTuydQHGjzgmcrupdG1yXjAxk372b3GT445iBfSR3jLC5/annoucement";
 var subscribtions={};
 
-var publish=async function(kv) {
+const publish=async function(kv) {
   var value=new Date();
-  kv.set("Performance",{updated:'value'});
+  await kv.set("Performance",{updated:'value'});
 }
 
 const subscribePeer=async function(peer) {
