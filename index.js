@@ -11,13 +11,13 @@ const ipfsOptions = {
 }
 
 const ipfs = new IPFS(ipfsOptions)
-const ANNOUNCEMENT_CHANNEL="/orbitdb/QmTuydQHGjzgmcrupdG1yXjAxk372b3GT445iBfSR3jLC5/annoucement";
+const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
 var subscribtions={};
 
 const publish=async function(kv) {
-  var obj = JSON.parse(fs.readFileSync("./node.performance.json"));
+  var obj = JSON.parse(fs.readFileSync(process.env.NODEOBJ));
   obj.timeStamp=new Date();
-  await kv.set("performance",obj);
+  await kv.set(process.env.NODECLASS,obj);
 }
 
 const subscribePeer=async function(peer) {
@@ -25,7 +25,8 @@ const subscribePeer=async function(peer) {
   const kv = await orbitdb.keyvalue(peer);
   await kv.load();
   kv.events.on('replicated', (address) => {
-      const v = kv.get("performance");
+      const v = kv.get(process.env.NODECLASS);
+      fs.writeFileSync(process.env.DATADIR+peer.replace('/','_')+".json",JSON.stringify(v));
       console.log("Updated",peer,v);
   });
   const v = kv.get("Performance");
@@ -51,7 +52,7 @@ const subscribeAnnouncements=async function(kv) {
         announcement.add({peer:kv.address.toString(),signature:"signed"});
       };
 
-      setInterval(announceThis,60000);
+      setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
       announceThis();
 
       console.log("Announcement Channel",announcement.address.toString());
@@ -65,9 +66,19 @@ const subscribeAnnouncements=async function(kv) {
 
 ipfs.on('error', (e) => console.error(e))
 ipfs.on('ready', async () => {
-  ipfs.swarm.connect("/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j").catch(function() {})
+
+  const connectPeers=function() {
+    const peers=process.env.SWARM.split(",");
+    ipfs.swarm.connect("/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j").catch(function() {})
+    for(var i=0;i<peers.length;i++) {
+      ipfs.swarm.connect(peers[i]).catch(function() {})
+    }
+  }
+  setInterval(connectPeers,process.env.SWARM_RECONNECT);
+  connectPeers();
+
   const orbitdb = new OrbitDB(ipfs)
-  const kv = await orbitdb.keyvalue('correnlty');
+  const kv = await orbitdb.keyvalue(process.env.NODECLASS);
   await kv.load();
   kv.events.on('replicated', (address) => {
 
@@ -78,8 +89,8 @@ ipfs.on('ready', async () => {
   publish(kv);
   setInterval(function() {
       publish(kv);
-  },360000);
-  fs.watch('./node.performance.json', { encoding: 'buffer' }, (eventType, filename) => {
+  },process.env.IDLE_REPUBLISH);
+  fs.watch(process.env.NODEOBJ, { encoding: 'buffer' }, (eventType, filename) => {
     publish(kv);
   });
 
