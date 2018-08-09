@@ -1,0 +1,23 @@
+{
+  "name": "corrently-node",
+  "version": "1.0.0",
+  "description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "corrently",
+    "stromdao",
+    "blockchain",
+    "node"
+  ],
+  "author": "Thorsten Zoerner <thorsten.zoerner@stromdao.com>",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^6.0.0",
+    "ipfs": "^0.31.2",
+    "ipfsd-ctl": "^0.39.1",
+    "orbit-db": "^0.19.9"
+  }
+}
