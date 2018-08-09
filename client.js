@@ -8,7 +8,7 @@ const ipfsOptions = {
 }
 
 const ipfs = new IPFS(ipfsOptions)
-
+´
 
 ipfs.on('error', (e) => console.error(e))
 ipfs.on('ready', async () => {
