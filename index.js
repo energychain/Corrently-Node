@@ -15,7 +15,7 @@ var subscribtions={};
 
 const publish=async function(kv) {
   var value=new Date();
-  await kv.set("Performance",{updated:'value'});
+  await kv.set("Performance",{updated:value});
 }
 
 const subscribePeer=async function(peer) {
@@ -24,6 +24,8 @@ const subscribePeer=async function(peer) {
   await kv.load();
   kv.events.on('replicated', (address) => {
       console.log("Peer Event",peer,address);
+      const v = kv.get("Performance");
+      console.log("Updated",peer,v);
   });
   const v = kv.get("Performance");
   console.log("Initial Entry",peer,v);
