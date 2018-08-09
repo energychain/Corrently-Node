@@ -26,8 +26,11 @@ const subscribePeer=async function(peer) {
   await kv.load();
   kv.events.on('replicated', (address) => {
       const v = kv.get(process.env.NODECLASS);
-      fs.writeFileSync(process.env.DATADIR+peer.replaceAll('/','_')+".json",JSON.stringify(v));
       console.log("Updated",peer,v);
+      var filename=peer.replace("/orbitdb/","");
+      filename=filename.replace("/",'_');
+      fs.writeFileSync(process.env.DATADIR+filename+".json",JSON.stringify(v));
+
   });
   const v = kv.get("Performance");
   console.log("Initial Entry",peer,v);
