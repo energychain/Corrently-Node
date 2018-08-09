@@ -26,7 +26,7 @@ const subscribePeer=async function(peer) {
   await kv.load();
   kv.events.on('replicated', (address) => {
       const v = kv.get(process.env.NODECLASS);
-      fs.writeFileSync(process.env.DATADIR+peer.replace('/','_')+".json",JSON.stringify(v));
+      fs.writeFileSync(process.env.DATADIR+peer.replaceAll('/','_')+".json",JSON.stringify(v));
       console.log("Updated",peer,v);
   });
   const v = kv.get("Performance");
