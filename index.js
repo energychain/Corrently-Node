@@ -28,7 +28,7 @@ ipfs.on('ready', async () => {
   const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
   announcement.add({peer:kv.address.toString(),signature:"signed"});
   console.log("Announcement Channel",announcement.address.toString());
-
+  console.log("Protected KV",kv.assredd.toString());
   announcement.events.on('replicated', (address) => {
     const all = announcement.iterator({ limit: 1 })
       .collect()
