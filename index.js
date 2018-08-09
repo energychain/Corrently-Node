@@ -16,12 +16,11 @@ var subscribtions={};
 const publish=async function(kv) {
   var value=new Date();
   await kv.set("Performance",{updated:'value'});
-  console.log("Published");
 }
 
 const subscribePeer=async function(peer) {
   const orbitdb = new OrbitDB(ipfs);
-  const kv = await orbitdb.keyvalue('correnlty-performance');
+  const kv = await orbitdb.keyvalue(peer);
   await kv.load();
   kv.events.on('replicated', (address) => {
       console.log("Peer Event",peer,address);
