@@ -31,6 +31,16 @@ const subscribeAnnouncements=async function(kv) {
       const orbitdb = new OrbitDB(ipfs);
       const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
 
+      const refreshItems = function() {
+        const items = announcement.iterator({ limit: 100 })
+          .collect()
+          .map((e) => e.payload.value);
+          for(var i=0;i<items.length;i++) {
+            if(typeof subscribtions[items[i].peer] == "undefined") {
+              subscribtions[items[i].peer]=subscribePeer(items[i].peer);
+            }
+          }
+      }
 
       var announceThis=function() {
         announcement.add({peer:kv.address.toString(),signature:"signed"});
@@ -42,15 +52,10 @@ const subscribeAnnouncements=async function(kv) {
       console.log("Announcement Channel",announcement.address.toString());
 
       announcement.events.on('replicated', (address) => {
-        const items = announcement.iterator({ limit: 100 })
-          .collect()
-          .map((e) => e.payload.value);
-          for(var i=0;i<items.length;i++) {
-            if(typeof subscribtions[items[i].peer] == "undefined") {
-              subscribtions[items[i].peer]=subscribePeer(items[i].peer);
-            }
-          }
+        console.log("Announcement Event",address);
+        refreshItems();
       })
+      refreshItems();
 }
 
 ipfs.on('error', (e) => console.error(e))
