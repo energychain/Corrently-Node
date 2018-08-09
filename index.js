@@ -30,7 +30,7 @@ ipfs.on('ready', async () => {
   console.log("Announcement Channel",announcement.address.toString());
 
   announcement.events.on('replicated', (address) => {
-    const all = db.iterator({ limit: 1 })
+    const all = announcement.iterator({ limit: 1 })
       .collect()
       .map((e) => e.payload.value);
     console.log(all);
