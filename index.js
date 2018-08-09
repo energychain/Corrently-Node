@@ -25,6 +25,8 @@ const subscribePeer=async function(peer) {
   kv.events.on('replicated', (address) => {
       console.log("Peer Event",peer,address);
   });
+  const v = await kv.get("Performance");
+  console.log(peer,v);
 }
 
 const subscribeAnnouncements=async function(kv) {
