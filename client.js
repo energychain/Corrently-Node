@@ -21,9 +21,9 @@ ipfs.on('ready', async () => {
   // Listen for updates from peers
   kv.events.on('replicated', (address) => {
     console.log(address);
-    const value = await kv.get('updated');
+    const value =  kv.get('updated');
     console.log(value);
   })
-  
+
 
 })
