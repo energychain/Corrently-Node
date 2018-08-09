@@ -11,6 +11,7 @@ const ipfsOptions = {
 
 const ipfs = new IPFS(ipfsOptions)
 const ANNOUNCEMENT_CHANNEL="/orbitdb/QmTuydQHGjzgmcrupdG1yXjAxk372b3GT445iBfSR3jLC5/annoucement";
+var subscribtions={};
 
 var publish=async function(kv) {
   var value=new Date();
@@ -29,7 +30,7 @@ const subscribePeer=async function(peer) {
 const subscribeAnnouncements=async function(kv) {
       const orbitdb = new OrbitDB(ipfs);
       const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
-      var subscribtions={};
+
 
       var announceThis=function() {
         announcement.add({peer:kv.address.toString(),signature:"signed"});
@@ -58,11 +59,11 @@ ipfs.on('ready', async () => {
   const orbitdb = new OrbitDB(ipfs)
   const kv = await orbitdb.keyvalue('correnlty');
   await kv.load();
-  // Listen for updates from peers
   kv.events.on('replicated', (address) => {
 
   });
   console.log("Peer KV",kv.address.toString());
+  subscribtions[kv.address.toString()]=function(){};
   subscribeAnnouncements(kv);
   publish(kv);
   setInterval(function() {
