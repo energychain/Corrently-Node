@@ -23,7 +23,6 @@ const subscribePeer=async function(peer) {
   const kv = await orbitdb.keyvalue(peer);
   await kv.load();
   kv.events.on('replicated', (address) => {
-      console.log("Peer Event",peer,address);
       const v = kv.get("Performance");
       console.log("Updated",peer,v);
   });
