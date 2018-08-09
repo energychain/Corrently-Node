@@ -16,6 +16,7 @@ var subscribtions={};
 const publish=async function(kv) {
   var value=new Date();
   await kv.set("Performance",{updated:'value'});
+  console.log("Published");
 }
 
 const subscribePeer=async function(peer) {
@@ -26,7 +27,7 @@ const subscribePeer=async function(peer) {
       console.log("Peer Event",peer,address);
   });
   const v = kv.get("Performance");
-  console.log(peer,v);
+  console.log("Initial Entry",peer,v);
 }
 
 const subscribeAnnouncements=async function(kv) {
