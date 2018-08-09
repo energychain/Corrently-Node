@@ -18,6 +18,7 @@ var publish=async function(kv) {
 }
 
 const subscribePeer=async function(peer) {
+  const orbitdb = new OrbitDB(ipfs);
   const kv = await orbitdb.keyvalue('correnlty-performance');
   await kv.load();
   kv.events.on('replicated', (address) => {
