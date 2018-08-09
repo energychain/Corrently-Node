@@ -15,7 +15,7 @@ var subscribtions={};
 
 var publish=async function(kv) {
   var value=new Date();
-  kv.set("Performance",{updated:value});
+  kv.set("Performance",{updated:'value'});
 }
 
 const subscribePeer=async function(peer) {
