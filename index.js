@@ -2,6 +2,7 @@ Error.stackTraceLimit = Infinity;
 require('dotenv').config();
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
+const fs = require("fs");
 
 const ipfsOptions = {
   EXPERIMENTAL: {
@@ -14,8 +15,9 @@ const ANNOUNCEMENT_CHANNEL="/orbitdb/QmTuydQHGjzgmcrupdG1yXjAxk372b3GT445iBfSR3j
 var subscribtions={};
 
 const publish=async function(kv) {
-  var value=new Date();
-  await kv.set("Performance",{updated:value});
+  var obj = JSON.parse(fs.readFileSync("./node.performance.json"));
+  obj.timeStamp=new Date();
+  await kv.set("performance",obj);
 }
 
 const subscribePeer=async function(peer) {
@@ -23,7 +25,7 @@ const subscribePeer=async function(peer) {
   const kv = await orbitdb.keyvalue(peer);
   await kv.load();
   kv.events.on('replicated', (address) => {
-      const v = kv.get("Performance");
+      const v = kv.get("performance");
       console.log("Updated",peer,v);
   });
   const v = kv.get("Performance");
@@ -76,6 +78,9 @@ ipfs.on('ready', async () => {
   publish(kv);
   setInterval(function() {
       publish(kv);
-  },2000);
+  },360000);
+  fs.watch('./node.performance.json', { encoding: 'buffer' }, (eventType, filename) => {
+    publish(kv);
+  });
 
 })
