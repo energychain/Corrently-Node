@@ -16,8 +16,13 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^6.0.0",
+    "install": "^0.12.1",
     "ipfs": "^0.31.2",
+    "ipfs-log": "^4.1.2",
+    "ipfs-pubsub-room": "^1.4.0",
     "ipfsd-ctl": "^0.39.1",
-    "orbit-db": "^0.19.9"
+    "npm": "^6.3.0",
+    "orbit-db": "^0.19.9",
+    "orbit-db-keystore": "^0.1.0"
   }
 }
