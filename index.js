@@ -67,6 +67,7 @@ const subscribeAnnouncements=async function(kv) {
       }
 
       var announceThis=function() {
+        console.log("announceThis");
         announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT});
       };
 
@@ -89,7 +90,7 @@ ipfs.on('ready', async () => {
     const peers=process.env.SWARM.split(",");
     ipfs.swarm.connect("/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j").catch(function() {})
     for(var i=0;i<peers.length;i++) {
-      ipfs.swarm.connect(peers[i]).catch(function() {})
+      ipfs.swarm.connect(peers[i]).catch(function(e) { console.log("Swarm Connect",e);})
     }
   }
   setInterval(connectPeers,process.env.SWARM_RECONNECT);
