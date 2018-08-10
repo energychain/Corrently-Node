@@ -33,7 +33,7 @@ const subscribePeer=async function(item) {
   var peer = item.peer;
   var e20abi=[  {"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "balanceOf","outputs": [{"name": "balance","type": "uint256"}],"payable": false,"type": "function"}];
   var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
-  contract.balanceOf(item.account).then(function(balance) {
+  contract.balanceOf(item.account).then(async function(balance) {
       if(balance>0) {
         const orbitdb = new OrbitDB(ipfs);
         const kv = await orbitdb.keyvalue(peer);
