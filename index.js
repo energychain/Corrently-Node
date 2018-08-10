@@ -90,7 +90,7 @@ ipfs.on('ready', async () => {
     const peers=process.env.SWARM.split(",");
     ipfs.swarm.connect("/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j").catch(function() {})
     for(var i=0;i<peers.length;i++) {
-      ipfs.swarm.connect(peers[i]).catch(function(e) { console.log("Swarm Connect",e);})
+      ipfs.swarm.connect(peers[i]).then(function() { console.log(peers[i]);}).catch(function() {});
     }
   }
   setInterval(connectPeers,process.env.SWARM_RECONNECT);
