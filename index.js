@@ -3,6 +3,15 @@ require('dotenv').config();
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
 const fs = require("fs");
+const ethers = require("ethers");
+
+/***
+ Nächster Schritt:
+ - Swarm dynamisch erweitern um Netzstabilität zu fördern
+ - Blacklist einführen
+ - Performance Werte tatsächlich schreiben (nicht nur irgend ein JSON Objekt)
+ - Lokaler Server aufsetzen für dAPPing
+*/
 
 const ipfsOptions = {
   EXPERIMENTAL: {
@@ -20,20 +29,24 @@ const publish=async function(kv) {
   await kv.set(process.env.NODECLASS,obj);
 }
 
-const subscribePeer=async function(peer) {
-  const orbitdb = new OrbitDB(ipfs);
-  const kv = await orbitdb.keyvalue(peer);
-  await kv.load();
-  kv.events.on('replicated', (address) => {
-      const v = kv.get(process.env.NODECLASS);
-      console.log("Updated",peer,v);
-      var filename=peer.replace("/orbitdb/","");
-      filename=filename.replace("/",'_');
-      fs.writeFileSync(process.env.DATADIR+filename+".json",JSON.stringify(v));
-
+const subscribePeer=async function(item) {
+  var peer = item.peer;
+  var e20abi=[  {"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "balanceOf","outputs": [{"name": "balance","type": "uint256"}],"payable": false,"type": "function"}];
+  var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
+  contract.balanceOf(item.account).then(function(balance) {
+      if(balance>0) {
+        const orbitdb = new OrbitDB(ipfs);
+        const kv = await orbitdb.keyvalue(peer);
+        await kv.load();
+        kv.events.on('replicated', (address) => {
+            const v = kv.get(process.env.NODECLASS);
+            console.log("Updated",peer,item.account,v);
+            fs.writeFileSync(process.env.DATADIR+item.account+".json",JSON.stringify(v));
+        });
+      } else {
+        console.log("Ignored peer ",item.account,item.peer);
+      }
   });
-  const v = kv.get("Performance");
-  console.log("Initial Entry",peer,v);
 }
 
 const subscribeAnnouncements=async function(kv) {
@@ -46,13 +59,14 @@ const subscribeAnnouncements=async function(kv) {
           .map((e) => e.payload.value);
           for(var i=0;i<items.length;i++) {
             if(typeof subscribtions[items[i].peer] == "undefined") {
-              subscribtions[items[i].peer]=subscribePeer(items[i].peer);
+              subscribtions[items[i].peer]=items[i].account;
+              subscribePeer(items[i]);
             }
           }
       }
 
       var announceThis=function() {
-        announcement.add({peer:kv.address.toString(),signature:"signed"});
+        announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT});
       };
 
       setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
