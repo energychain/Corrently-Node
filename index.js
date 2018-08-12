@@ -57,6 +57,8 @@ const subscribePeer=async function(item) {
             // Validate Signature!
             var doc= process.env.NODECLASS;
             if(typeof item.doc != "undefined") doc = item.doc;
+            if(typeof v._id != "undefined") doc=v._id;
+
             var db = new localPouch(item.account);
             db.get(doc).then(function(dbdoc) {
               v._rev=dbdoc._rev;
