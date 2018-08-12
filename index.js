@@ -36,6 +36,7 @@ const publish=async function(kv,change) {
       console.log("Try publish without document?",err);
     });
   } else {
+    console.log("Pubslished:",change);
     change._publishTimeStamp=new Date();
     await kv.set(change._id,change);
   }
