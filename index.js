@@ -28,13 +28,17 @@ var subscribtions={};
 
 const publish=async function(kv,change) {
   var nodedb = new localPouch(process.env.ACCOUNT);
-  if(typeof change=="undefined") change=process.env.NODECLASS;
-  nodedb.get(process.env.NODECLASS).then(async function(obj) {
+  if(typeof change=="undefined"){
+      nodedb.get(process.env.NODECLASS).then(async function(obj) {
+      obj._publishTimeStamp=new Date();
+      await kv.set(change,obj);
+    }).catch(function(err) {
+      console.log("Try publish without document?",err);
+    });
+  } else {
     obj._publishTimeStamp=new Date();
     await kv.set(change,obj);
-  }).catch(function(err) {
-    console.log("Try publish without document?",err);
-  });
+  }
 }
 
 const subscribePeer=async function(item) {
@@ -154,7 +158,8 @@ ipfs.on('ready', async () => {
     since: 'now',
     live: true,
     include_docs: true
-  }).on('change', function(change) {
+  }).on('change', function(change.doc) {
+    console.log("Change",change);
     publish(kv,change);
   })
 })
