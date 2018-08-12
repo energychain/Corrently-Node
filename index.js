@@ -4,6 +4,9 @@ const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
 const fs = require("fs");
 const ethers = require("ethers");
+const PouchDB = require('pouchdb');
+const localPouch = PouchDB.defaults({prefix: process.env.DATADIR});
+const express = require('express');
 
 /***
  Nächster Schritt:
@@ -24,25 +27,48 @@ const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
 var subscribtions={};
 
 const publish=async function(kv) {
-  var obj = JSON.parse(fs.readFileSync(process.env.NODEOBJ));
-  obj.timeStamp=new Date();
-  await kv.set(process.env.NODECLASS,obj);
+  var nodedb = new localPouch(process.env.ACCOUNT);
+  nodedb.get(process.env.NODECLASS).then(async function(obj) {
+    obj._publishTimeStamp=new Date();
+    await kv.set(process.env.NODECLASS,obj);
+  }).catch(function(err) {
+    console.log("Try publish without document?",err);
+  });
 }
 
 const subscribePeer=async function(item) {
   var peer = item.peer;
-  console.log("Subsribe Request",item);
   var e20abi=[  {"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "balanceOf","outputs": [{"name": "balance","type": "uint256"}],"payable": false,"type": "function"}];
   var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
   contract.balanceOf(item.account).then(async function(balance) {
       if(balance>0) {
+        console.log("Added Peer",item.account);
         const orbitdb = new OrbitDB(ipfs);
         const kv = await orbitdb.keyvalue(peer);
         await kv.load();
         kv.events.on('replicated', (address) => {
             const v = kv.get(process.env.NODECLASS);
             console.log("Updated",peer,item.account,v);
-            fs.writeFileSync(process.env.DATADIR+item.account+".json",JSON.stringify(v));
+            // Validate Signature!
+            var doc= process.env.NODECLASS;
+            if(typeof item.doc != "undefined") doc = item.doc;
+            var db = new localPouch(item.account);
+            db.get(doc).then(function(dbdoc) {
+              v._rev=dbdoc._rev;
+              v._id=item.doc;
+              return db.put(v);
+            }).then(function(response) {
+              db.compact().then(function (result) {
+                console.log("Compacted",item.account);
+                db.close().then(function () {
+                    // success
+                  });
+              }).catch(function (err) {
+                console.log(err);
+              });
+            }).catch(function (err) {
+              return db.put(v);
+            });
         });
       } else {
         console.log("Ignored peer ",item.account,item.peer);
@@ -68,7 +94,7 @@ const subscribeAnnouncements=async function(kv) {
 
       var announceThis=function() {
         console.log("announceThis");
-        announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT});
+        announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:"performance"});
       };
 
       setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
@@ -83,16 +109,23 @@ const subscribeAnnouncements=async function(kv) {
       refreshItems();
 }
 
+// Main Process starts here...
+
 ipfs.on('error', (e) => console.error(e))
 ipfs.on('ready', async () => {
 
-  const connectPeers=function() {
+  const app = express();
+  PouchDB.defaults({prefix: ''});
+  app.use('/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
+  app.listen(8001);
+
+  const connectPeers=async function() {
     const peers=process.env.SWARM.split(",");
-    ipfs.swarm.connect("/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j").catch(function() {})
     for(var i=0;i<peers.length;i++) {
       ipfs.swarm.connect(peers[i]).then(function() { console.log(peers[i]);}).catch(function() {});
     }
   }
+
   setInterval(connectPeers,process.env.SWARM_RECONNECT);
   connectPeers();
 
@@ -109,8 +142,12 @@ ipfs.on('ready', async () => {
   setInterval(function() {
       publish(kv);
   },process.env.IDLE_REPUBLISH);
-  fs.watch(process.env.NODEOBJ, { encoding: 'buffer' }, (eventType, filename) => {
+  var nodedb = new localPouch(process.env.ACCOUNT);
+  var nodechanges = nodedb.changes({
+    since: 'now',
+    live: true,
+    include_docs: false
+  }).on('change', function(change) {
     publish(kv);
-  });
-
+  })
 })
