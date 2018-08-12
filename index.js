@@ -153,7 +153,7 @@ ipfs.on('ready', async () => {
   var nodechanges = nodedb.changes({
     since: 'now',
     live: true,
-    include_docs: false
+    include_docs: true
   }).on('change', function(change) {
     publish(kv,change);
   })
