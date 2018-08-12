@@ -48,6 +48,10 @@ const subscribePeer=async function(item) {
         await kv.load();
         kv.events.on('replicated', (address) => {
             const v = kv.get(process.env.NODECLASS);
+            if(typeof v._publishTimeStamp!="undefined") {
+                v.publishTimeStamp=v._publishTimeStamp;
+                delete v._publishTimeStamp;
+            }
             console.log("Updated",peer,item.account,v);
             // Validate Signature!
             var doc= process.env.NODECLASS;
@@ -67,7 +71,10 @@ const subscribePeer=async function(item) {
                 console.log(err);
               });
             }).catch(function (err) {
-              return db.put(v);
+              console.log(err);
+              if(typeof v._rev != "undefined") delete v._rev;
+
+              return db.put(v).catch(function(e) {console.log("Insert",e,item.account,v)});
             });
         });
       } else {
@@ -94,7 +101,7 @@ const subscribeAnnouncements=async function(kv) {
 
       var announceThis=function() {
         console.log("announceThis");
-        announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:"performance"});
+        announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:process.env.NODECLASS});
       };
 
       setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
