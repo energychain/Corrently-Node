@@ -160,6 +160,7 @@ ipfs.on('ready', async () => {
     live: true,
     include_docs: true
   }).on('change', function(change) {
+    announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:change.doc._id});
     publish(kv,change.doc);
   })
 })
