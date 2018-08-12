@@ -158,8 +158,7 @@ ipfs.on('ready', async () => {
     since: 'now',
     live: true,
     include_docs: true
-  }).on('change', function(change.doc) {
-    console.log("Change",change);
-    publish(kv,change);
+  }).on('change', function(change) {
+    publish(kv,change.doc);
   })
 })
