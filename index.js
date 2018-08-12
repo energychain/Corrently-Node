@@ -30,14 +30,14 @@ const publish=async function(kv,change) {
   var nodedb = new localPouch(process.env.ACCOUNT);
   if(typeof change=="undefined"){
       nodedb.get(process.env.NODECLASS).then(async function(obj) {
-      obj._publishTimeStamp=new Date();
-      await kv.set(change,obj);
+        obj._publishTimeStamp=new Date();
+        await kv.set(obj._id,obj);
     }).catch(function(err) {
       console.log("Try publish without document?",err);
     });
   } else {
-    obj._publishTimeStamp=new Date();
-    await kv.set(change,obj);
+    change._publishTimeStamp=new Date();
+    await kv.set(change._id,change);
   }
 }
 
