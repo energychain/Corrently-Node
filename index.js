@@ -64,9 +64,6 @@ const subscribePeer=async function(item) {
             }).then(function(response) {
               db.compact().then(function (result) {
                 console.log("Compacted",item.account);
-                db.close().then(function () {
-                    // success
-                  });
               }).catch(function (err) {
                 console.log(err);
               });
