@@ -117,7 +117,7 @@ ipfs.on('ready', async () => {
   const app = express();
   PouchDB.defaults({prefix: ''});
   app.use('/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
-  app.listen(8001);
+  app.listen(4009);
 
   const connectPeers=async function() {
     const peers=process.env.SWARM.split(",");
