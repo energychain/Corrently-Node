@@ -26,11 +26,12 @@ const ipfs = new IPFS(ipfsOptions)
 const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
 var subscribtions={};
 
-const publish=async function(kv) {
+const publish=async function(kv,change) {
   var nodedb = new localPouch(process.env.ACCOUNT);
+  if(typeof change=="undefined") change=process.env.NODECLASS;
   nodedb.get(process.env.NODECLASS).then(async function(obj) {
     obj._publishTimeStamp=new Date();
-    await kv.set(process.env.NODECLASS,obj);
+    await kv.set(change,obj);
   }).catch(function(err) {
     console.log("Try publish without document?",err);
   });
@@ -152,6 +153,6 @@ ipfs.on('ready', async () => {
     live: true,
     include_docs: false
   }).on('change', function(change) {
-    publish(kv);
+    publish(kv,change);
   })
 })
