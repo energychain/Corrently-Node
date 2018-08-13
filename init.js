@@ -15,7 +15,7 @@ module.exports=function(cb) {
           content+='\n';
           content+='# No Change required below (under normal operation)';
           content+='\n';
-          content+="SWARM=/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j,/ip4/52.59.191.11/tcp/4002/ipfs/QmRy3WXC9yyNGNpztP8yAjfWYqJJs5Yg6SzGKfjhr63kg8";
+          content+="SWARM=/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j,/ip4/18.184.17.153/tcp/4002/ipfs/QmRy3WXC9yyNGNpztP8yAjfWYqJJs5Yg6SzGKfjhr63kg8";
           content+='\n';
           content+="SWARM_RECONNECT=3600000";
           content+='\n';
