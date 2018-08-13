@@ -36,8 +36,8 @@ const publish=async function(kv,change) {
       console.log("Try publish without document?",err);
     });
   } else {
-    const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
     const orbitdb = new OrbitDB(ipfs);
+    const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
     announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:change._id});
     console.log("Pubslished:",change);
     change._publishTimeStamp=new Date();
@@ -51,7 +51,7 @@ const subscribePeer=async function(item) {
   var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
   contract.balanceOf(item.account).then(async function(balance) {
       if(balance>0) {
-        console.log("Added Peer",item.account);
+        console.log("Added Peer",item.account,item.doc);
         const orbitdb = new OrbitDB(ipfs);
         const kv = await orbitdb.keyvalue(peer);
         await kv.load();
