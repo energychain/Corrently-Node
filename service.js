@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = async function(cb) {
+module.exports = async function(cbmain) {
 
   var init = require("./init.js");
   init(async function(cb) {
@@ -195,8 +195,8 @@ module.exports = async function(cb) {
           }).on('change', function(change) {
             publish(kv,change.doc);
           })
-          if(typeof cb =="function") {
-            cb(nodedb,kv);
+          if(typeof cbmain =="function") {
+            cbmain(nodedb,kv);
           }
         })
 
