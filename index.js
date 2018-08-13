@@ -7,7 +7,7 @@ const ethers = require("ethers");
 const PouchDB = require('pouchdb');
 const localPouch = PouchDB.defaults({prefix: process.env.DATADIR});
 const express = require('express');
-
+const wallet = new ethers.Wallet(process.env.PRIVATEKEY);
 /***
  Nächster Schritt:
  - Swarm dynamisch erweitern um Netzstabilität zu fördern
@@ -38,7 +38,8 @@ const publish=async function(kv,change) {
   } else {
     const orbitdb = new OrbitDB(ipfs);
     const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
-    announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:change._id});
+    var signature=wallet.signMessage(kv.address.toString());
+    announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:change._id});
     console.log("Pubslished:",change);
     change._publishTimeStamp=new Date();
     await kv.set(change._id,change);
@@ -78,7 +79,6 @@ const subscribePeer=async function(item) {
               });
             }).catch(function (err) {
               if(typeof v._rev != "undefined") delete v._rev;
-
               return db.put(v).catch(function(e) {console.log("Insert",e,item.account,item.doc)});
             });
         });
@@ -105,8 +105,8 @@ const subscribeAnnouncements=async function(kv) {
       }
 
       var announceThis=function() {
-        console.log("announceThis");
-        announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:process.env.NODECLASS});
+        var signature=wallet.signMessage(kv.address.toString());
+        announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:process.env.NODECLASS});
       };
 
       setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
@@ -154,7 +154,7 @@ ipfs.on('ready', async () => {
   setInterval(function() {
       publish(kv);
   },process.env.IDLE_REPUBLISH);
-  var nodedb = new localPouch(process.env.ACCOUNT);
+  var nodedb = new localPouch(wallet.address);
   var nodechanges = nodedb.changes({
     since: 'now',
     live: true,
