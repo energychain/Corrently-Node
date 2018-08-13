@@ -56,7 +56,7 @@ const subscribePeer=async function(item) {
         const kv = await orbitdb.keyvalue(peer);
         await kv.load();
         kv.events.on('replicated', (address) => {
-            const v = kv.get(process.env.item.doc);
+            const v = kv.get(item.doc);
             if(typeof v._publishTimeStamp!="undefined") {
                 v.publishTimeStamp=v._publishTimeStamp;
                 delete v._publishTimeStamp;
