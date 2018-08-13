@@ -52,7 +52,7 @@ const subscribePeer=async function(item) {
   var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
   contract.balanceOf(item.account).then(async function(balance) {
     var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
-      if((balance>0)&&(sign_address==item.account)) {
+      if((balance>0)&&(sign_address==item.account)&&(sign_address!=wallet.address)) {
         console.log("Added Peer",item.account,item.doc);
         const orbitdb = new OrbitDB(ipfs);
         const kv = await orbitdb.keyvalue(peer);
