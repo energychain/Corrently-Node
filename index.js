@@ -61,7 +61,7 @@ const subscribePeer=async function(item) {
                 v.publishTimeStamp=v._publishTimeStamp;
                 delete v._publishTimeStamp;
             }
-            console.log("Updated",peer,item.account,v);
+            console.log("Updated",peer,item.account,item.doc);
             // Validate Signature!
             var doc= process.env.NODECLASS;
             if(typeof item.doc != "undefined") doc = item.doc;
@@ -74,15 +74,12 @@ const subscribePeer=async function(item) {
               return db.put(v);
             }).then(function(response) {
               db.compact().then(function (result) {
-                console.log("Compacted",item.account);
               }).catch(function (err) {
-                console.log(err);
               });
             }).catch(function (err) {
-              console.log(err);
               if(typeof v._rev != "undefined") delete v._rev;
 
-              return db.put(v).catch(function(e) {console.log("Insert",e,item.account,v)});
+              return db.put(v).catch(function(e) {console.log("Insert",e,item.account,item.doc)});
             });
         });
       } else {
