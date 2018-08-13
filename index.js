@@ -100,8 +100,8 @@ const subscribeAnnouncements=async function(kv) {
           .collect()
           .map((e) => e.payload.value);
           for(var i=0;i<items.length;i++) {
-            if(typeof subscribtions[items[i].peer] == "undefined") {
-              subscribtions[items[i].peer]=items[i].account;
+            if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
+              subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
               subscribePeer(items[i]);
             }
           }
