@@ -36,6 +36,8 @@ const publish=async function(kv,change) {
       console.log("Try publish without document?",err);
     });
   } else {
+    const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
+    announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:change._id});
     console.log("Pubslished:",change);
     change._publishTimeStamp=new Date();
     await kv.set(change._id,change);
@@ -160,7 +162,6 @@ ipfs.on('ready', async () => {
     live: true,
     include_docs: true
   }).on('change', function(change) {
-    announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:change.doc._id});
     publish(kv,change.doc);
   })
 })
