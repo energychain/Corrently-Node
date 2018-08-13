@@ -51,7 +51,8 @@ const subscribePeer=async function(item) {
   var e20abi=[  {"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "balanceOf","outputs": [{"name": "balance","type": "uint256"}],"payable": false,"type": "function"}];
   var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
   contract.balanceOf(item.account).then(async function(balance) {
-      if(balance>0) {
+    var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
+      if((balance>0)&&(sign_address==item.account)) {
         console.log("Added Peer",item.account,item.doc);
         const orbitdb = new OrbitDB(ipfs);
         const kv = await orbitdb.keyvalue(peer);
@@ -63,8 +64,6 @@ const subscribePeer=async function(item) {
                 delete v._publishTimeStamp;
             }
             console.log("Updated",peer,item.account,item.doc);
-            var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
-            console.log("Signature Validation",sign_address,item.account);
 
             var doc= process.env.NODECLASS;
             if(typeof item.doc != "undefined") doc = item.doc;
