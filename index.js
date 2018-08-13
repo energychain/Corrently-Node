@@ -37,6 +37,7 @@ const publish=async function(kv,change) {
     });
   } else {
     const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
+    const orbitdb = new OrbitDB(ipfs);
     announcement.add({peer:kv.address.toString(),signature:"signed",account:process.env.ACCOUNT,doc:change._id});
     console.log("Pubslished:",change);
     change._publishTimeStamp=new Date();
