@@ -63,7 +63,7 @@ const subscribePeer=async function(item) {
                 delete v._publishTimeStamp;
             }
             console.log("Updated",peer,item.account,item.doc);
-            var sign_address = wallet.verifyMessage(item.peer, item.signature);
+            var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
             console.log("Signature Validation",sign_address,item.account);
 
             var doc= process.env.NODECLASS;
