@@ -63,7 +63,9 @@ const subscribePeer=async function(item) {
                 delete v._publishTimeStamp;
             }
             console.log("Updated",peer,item.account,item.doc);
-            // Validate Signature!
+            var sign_address = Wallet.verifyMessage(item.peer, item.signature);
+            console.log("Signature Validation",sign_address,item.account);
+
             var doc= process.env.NODECLASS;
             if(typeof item.doc != "undefined") doc = item.doc;
             if(typeof v._id != "undefined") doc=v._id;
