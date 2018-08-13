@@ -1,16 +1,23 @@
 {
 	"name": "corrently-node",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
 	"keywords": [
 		"corrently",
 		"stromdao",
 		"blockchain",
-		"node"
+		"node",
+		"proof-of-stake",
+		"decentralized",
+		"distributed"
 	],
 	"license": "ISC",
 	"author": "Thorsten Zoerner <thorsten.zoerner@stromdao.com>",
-	"main": "index.js",
+	"main": "service.js",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/energychain/Corrently-Node.git"
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
