@@ -14,8 +14,12 @@ module.exports=function(cb) {
   // Will be called once finished
   });
   client.externalIp((err, ip) => {
-      process.env.EXTERNAL_IP=ip;
-      console.log(ip);
+      if((typeof process.env.PUBLIC_IP!="undefined")&&(process.env.PUBLIC_IP!=null)) {
+        process.env.EXTERNAL_IP=process.env.PUBLIC_IP;
+      } else {
+        process.env.EXTERNAL_IP=ip;
+      }
+      console.log("Public IP",process.env.EXTERNAL_IP);
       fs.stat(fname,function(err,stat) {
           if(typeof stat == "undefined") {
               console.log(".env does not exist - creating new!");
@@ -29,7 +33,7 @@ module.exports=function(cb) {
               content+='\n';
               content+='# No Change required below (under normal operation)';
               content+='\n';
-              content+="SWARM=/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j,/ip4/18.184.17.153/tcp/4002/ipfs/QmRy3WXC9yyNGNpztP8yAjfWYqJJs5Yg6SzGKfjhr63kg8";
+              content+="SWARM=/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j,/ip4/18.184.17.153/tcp/4002/ipfs/QmRy3WXC9yyNGNpztP8yAjfWYqJJs5Yg6SzGKfjhr63kg8,/ip4/108.61.210.201/tcp/4002/ipfs/QmPGfRp7VL7XiR28QXVWTzPNZxGRngVfgrT3DCuGMuLucD";
               content+='\n';
               content+="SWARM_RECONNECT=3600000";
               content+='\n';

@@ -1,6 +1,6 @@
 {
 	"name": "corrently-node",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
 	"keywords": [
 		"corrently",
@@ -43,6 +43,7 @@
 		"orbit-db": "^0.19.9",
 		"orbit-db-keystore": "^0.1.0",
 		"pouchdb": "^7.0.0",
+		"start-stop-daemon": "^0.1.1",
 		"winston": "^3.0.0"
 	}
 }

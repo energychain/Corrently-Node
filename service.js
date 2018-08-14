@@ -36,7 +36,8 @@ module.exports = async function(cbmain) {
             pubsub: true
           }
         }
-
+        logger.info("Authority Node Address "+process.env.ACCOUNT);
+        
         const ipfs = new IPFS(ipfsOptions)
         const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
         var subscribtions={};
@@ -53,6 +54,7 @@ module.exports = async function(cbmain) {
                 obj.swarm.IDLE_ANNOUNCEMENT=process.env.IDLE_ANNOUNCEMENT;
                 obj.swarm.E20CONTRACT=process.env.E20CONTRACT;
                 obj.swarm.SWARM_RECONNECT=process.env.SWARM_RECONNECT;
+                obj.swarm.SWARM_ID=process.env.IPFS_ID;
                 obj._publishTimeStamp=new Date();
                 await kv.set(obj._id,obj);
             }).catch(async function(err) {
@@ -65,6 +67,7 @@ module.exports = async function(cbmain) {
               obj.swarm.IDLE_ANNOUNCEMENT=process.env.IDLE_ANNOUNCEMENT;
               obj.swarm.E20CONTRACT=process.env.E20CONTRACT;
               obj.swarm.SWARM_RECONNECT=process.env.SWARM_RECONNECT;
+              obj.swarm.SWARM_ID=process.env.IPFS_ID;
               obj._id=process.env.NODECLASS;
               await nodedb.put(obj);
             });
@@ -137,6 +140,9 @@ module.exports = async function(cbmain) {
                     if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
                       subscribePeer(items[i]);
+                      if(typeof items[i].swarm != "undefined") {
+                            ipfs.swarm.connect(items[i].swarm).then(function() { logger.info("Connected Swarm Peer "+item.swarm); connectPeer();}).catch(function() { logger.info("Failed Swarm Peer "+items[i].swarm);});
+                      }
                     }
                   }
               }
