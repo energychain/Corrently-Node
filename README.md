@@ -7,3 +7,11 @@ Goal of this module is to decentralize technical due diligence for Corrently bus
 
 ## Documentation
 Please refer to the Medium article: [https://medium.com/@zoernert/decentralized-due-diligence-serverless-dapp-5d042198960c]
+
+If you like to play arround try:
+
+```cli
+npm install -g corrently-node
+
+$ corrently-node
+```
