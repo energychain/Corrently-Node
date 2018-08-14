@@ -37,7 +37,7 @@ module.exports = async function(cbmain) {
           }
         }
         logger.info("Authority Node Address "+process.env.ACCOUNT);
-        
+
         const ipfs = new IPFS(ipfsOptions)
         const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
         var subscribtions={};
@@ -141,7 +141,7 @@ module.exports = async function(cbmain) {
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
                       subscribePeer(items[i]);
                       if(typeof items[i].swarm != "undefined") {
-                            ipfs.swarm.connect(items[i].swarm).then(function() { logger.info("Connected Swarm Peer "+item.swarm); connectPeer();}).catch(function() { logger.info("Failed Swarm Peer "+items[i].swarm);});
+                            ipfs.swarm.connect(items[i].swarm).then(function() { logger.info("Connected Swarm Peer "+items[i].swarm); connectPeer();}).catch(function() { logger.info("Failed Swarm Peer "+items[i].swarm);});
                       }
                     }
                   }
