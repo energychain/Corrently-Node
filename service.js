@@ -1,6 +1,14 @@
 'use strict';
 
 module.exports = async function(cbmain) {
+  const winston = require("winston");
+  const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+      new winston.transports.File({ filename: 'info.log', level: 'info' })
+    ]
+  });
 
   var init = require("./init.js");
   init(async function(cb) {
@@ -48,7 +56,7 @@ module.exports = async function(cbmain) {
                 obj._publishTimeStamp=new Date();
                 await kv.set(obj._id,obj);
             }).catch(async function(err) {
-              console.log("Try publish without document? - we create an epmty document",err);
+              logger.info("Try publish without document? - we create an epmty document" + err);
               var obj={};
               obj.swarm={};
               var peers=process.env.SWARM.split(",");
@@ -65,7 +73,7 @@ module.exports = async function(cbmain) {
             const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
             var signature=wallet.signMessage(kv.address.toString());
             announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:change._id,swarm:process.env.IPFS_ID});
-            console.log("Pubslished:",change);
+            logger.info("Pubslished " +change);
             change._publishTimeStamp=new Date();
             await kv.set(change._id,change);
           }
@@ -76,12 +84,12 @@ module.exports = async function(cbmain) {
           var e20abi=[  {"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "balanceOf","outputs": [{"name": "balance","type": "uint256"}],"payable": false,"type": "function"}];
           var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
           if(typeof item.swarm != "undefined") {
-                ipfs.swarm.connect(item.swarm).then(function() { console.log("Connected Swarm Peer",item.swarm); connectPeer();}).catch(function() { console.log("Failed Swarm Peer",item.swarm);});
+                ipfs.swarm.connect(item.swarm).then(function() { logger.info("Connected Swarm Peer "+item.swarm); connectPeer();}).catch(function() { logger.info("Failed Swarm Peer "+item.swarm);});
           }
           contract.balanceOf(item.account).then(async function(balance) {
             var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
               if((balance>0)&&(sign_address==item.account)&&(sign_address!=wallet.address)) {
-                console.log("Added Peer",item.account,item.doc);
+                logger.info("Added Peer " + item.account+ " "+item.doc);
                 const orbitdb = new OrbitDB(ipfs);
                 const kv = await orbitdb.keyvalue(peer);
                 await kv.load();
@@ -91,7 +99,7 @@ module.exports = async function(cbmain) {
                         v.publishTimeStamp=v._publishTimeStamp;
                         delete v._publishTimeStamp;
                     }
-                    console.log("Updated",peer,item.account,item.doc);
+                    logger.info("Updated "+peer +" "+item.account,item.doc);
 
                     var doc= process.env.NODECLASS;
                     if(typeof item.doc != "undefined") doc = item.doc;
@@ -108,11 +116,11 @@ module.exports = async function(cbmain) {
                       });
                     }).catch(function (err) {
                       if(typeof v._rev != "undefined") delete v._rev;
-                      return db.put(v).catch(function(e) {console.log("Insert",e,item.account,item.doc)});
+                      return db.put(v).catch(function(e) {logger.info("Insert",e,item.account,item.doc)});
                     });
                 });
               } else {
-                console.log("Ignored peer ",item.account,item.peer);
+                logger.info("Ignored peer ",item.account,item.peer);
               }
           });
         }
@@ -141,10 +149,10 @@ module.exports = async function(cbmain) {
               setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
               announceThis();
 
-              console.log("Announcement Channel",announcement.address.toString());
+              logger.info("Announcement Channel",announcement.address.toString());
 
               announcement.events.on('replicated', (address) => {
-                console.log("Announcement Event",address);
+                logger.info("Announcement Event "+address);
                 refreshItems();
               })
               refreshItems();
@@ -154,10 +162,10 @@ module.exports = async function(cbmain) {
 
         ipfs.on('error', (e) => console.error(e))
         ipfs.on('ready', async () => {
-          console.log("IPFS Daemon ready");
+          logger.info("IPFS Daemon ready");
           ipfs.id(function(err,id) {
               process.env.IPFS_ID="/ip4/"+process.env.EXTERNAL_IP+"/tcp/4002/ipfs/"+id.id;
-              console.log("IPFS ID",process.env.IPFS_ID);
+              logger.info("IPFS ID "+process.env.IPFS_ID);
           });
 
           const app = express();
@@ -172,7 +180,7 @@ module.exports = async function(cbmain) {
             var connectPeer = function() {
               if(peers.length>0) {
                   var peer=peers.pop();
-                  ipfs.swarm.connect(peer).then(function() { console.log("Connected",peer); connectPeer();}).catch(function() { console.log("Failed",peer); connectPeer();});
+                  ipfs.swarm.connect(peer).then(function() { logger.info("Connected",peer); connectPeer();}).catch(function() { logger.info("Failed",peer); connectPeer();});
               }
             }
             connectPeer();
@@ -184,12 +192,12 @@ module.exports = async function(cbmain) {
 
           const orbitdb = new OrbitDB(ipfs)
           const kv = await orbitdb.keyvalue(process.env.NODECLASS);
-          console.log("Initialize local KV");
+          logger.info("Initialize local KV");
           kv.load();
           kv.events.on('replicated', (address) => {
-              console.log(address);
+              logger.debug(address);
           });
-          console.log("Peer KV",kv.address.toString());
+          logger.info("Peer KV "+kv.address.toString());
           subscribtions[kv.address.toString()]=function(){};
           subscribeAnnouncements(kv);
           publish(kv);

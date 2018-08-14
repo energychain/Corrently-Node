@@ -11,12 +11,15 @@
 		"decentralized",
 		"distributed"
 	],
-	"license": "ISC",
-	"author": "Thorsten Zoerner <thorsten.zoerner@stromdao.com>",
-	"main": "service.js",
 	"homepage": "https://corrently.com/",
 	"bugs": {
 		"url": "https://github.com/energychain/Corrently-Node/issues"
+	},
+	"license": "ISC",
+	"author": "Thorsten Zoerner <thorsten.zoerner@stromdao.com>",
+	"main": "service.js",
+	"bin": {
+		"corrently-node": "./index.js"
 	},
 	"repository": {
 		"type": "git",
@@ -39,6 +42,7 @@
 		"npm": "^6.3.0",
 		"orbit-db": "^0.19.9",
 		"orbit-db-keystore": "^0.1.0",
-		"pouchdb": "^7.0.0"
+		"pouchdb": "^7.0.0",
+		"winston": "^3.0.0"
 	}
 }
