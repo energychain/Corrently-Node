@@ -140,7 +140,7 @@ module.exports = async function(cbmain) {
                     if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
                       subscribePeer(items[i]);
-                      if(typeof items[i].swarm != "undefined") {
+                      if((typeof items[i] != "undefined")&&(typeof items[i].swarm != "undefined")) {
                             ipfs.swarm.connect(items[i].swarm).then(function() { logger.info("Connected Swarm Peer "+items[i].swarm); connectPeer();}).catch(function() { logger.info("Failed Swarm Peer "+items[i].swarm);});
                       }
                     }
