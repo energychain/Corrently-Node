@@ -64,7 +64,7 @@ module.exports = async function(cbmain) {
             const orbitdb = new OrbitDB(ipfs);
             const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
             var signature=wallet.signMessage(kv.address.toString());
-            announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:change._id});
+            announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:change._id,swarm:process.env.IPFS_ID});
             console.log("Pubslished:",change);
             change._publishTimeStamp=new Date();
             await kv.set(change._id,change);
@@ -75,6 +75,9 @@ module.exports = async function(cbmain) {
           var peer = item.peer;
           var e20abi=[  {"constant": true,"inputs": [{"name": "_owner","type": "address"}],"name": "balanceOf","outputs": [{"name": "balance","type": "uint256"}],"payable": false,"type": "function"}];
           var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
+          if(typeof item.swarm != "undefined") {
+                ipfs.swarm.connect(item.swarm).then(function() { console.log("Connected Swarm Peer",item.swarm); connectPeer();}).catch(function() { console.log("Failed Swarm Peer",item.swarm);});
+          }
           contract.balanceOf(item.account).then(async function(balance) {
             var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
               if((balance>0)&&(sign_address==item.account)&&(sign_address!=wallet.address)) {
@@ -132,7 +135,7 @@ module.exports = async function(cbmain) {
 
               var announceThis=function() {
                 var signature=wallet.signMessage(kv.address.toString());
-                announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:process.env.NODECLASS});
+                announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:process.env.NODECLASS,swarm:process.env.IPFS_ID});
               };
 
               setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
@@ -152,6 +155,11 @@ module.exports = async function(cbmain) {
         ipfs.on('error', (e) => console.error(e))
         ipfs.on('ready', async () => {
           console.log("IPFS Daemon ready");
+          ipfs.id(function(err,id) {
+              process.env.IPFS_ID="/ip4/"+process.env.EXTERNAL_IP+"/tcp/4002/ipfs/"+id.id;
+              console.log("IPFS ID",process.env.IPFS_ID);
+          });
+
           const app = express();
           PouchDB.defaults({prefix: ''});
           app.use('/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
@@ -169,6 +177,7 @@ module.exports = async function(cbmain) {
             }
             connectPeer();
           }
+
 
           setInterval(connectPeers,process.env.SWARM_RECONNECT);
           connectPeers();

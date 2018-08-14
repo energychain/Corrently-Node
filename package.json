@@ -1,6 +1,6 @@
 {
 	"name": "corrently-node",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
 	"keywords": [
 		"corrently",
@@ -14,6 +14,10 @@
 	"license": "ISC",
 	"author": "Thorsten Zoerner <thorsten.zoerner@stromdao.com>",
 	"main": "service.js",
+	"homepage": "https://corrently.com/",
+	"bugs": {
+		"url": "https://github.com/energychain/Corrently-Node/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/energychain/Corrently-Node.git"
@@ -31,6 +35,7 @@
 		"ipfs-log": "^4.1.2",
 		"ipfs-pubsub-room": "^1.4.0",
 		"ipfsd-ctl": "^0.39.1",
+		"nat-upnp-2": "^3.0.3",
 		"npm": "^6.3.0",
 		"orbit-db": "^0.19.9",
 		"orbit-db-keystore": "^0.1.0",
