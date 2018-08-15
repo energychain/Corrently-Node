@@ -1,1 +1,1 @@
-cmd: make all
+cmd: make publish
