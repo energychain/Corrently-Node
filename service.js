@@ -1,10 +1,21 @@
 'use strict';
 
 module.exports = async function(cbmain) {
-  const winston = require("winston");
-  const logger = winston.createLogger({
+
+  const { createLogger, format, transports } = require('winston');
+  const { combine, timestamp, label, printf } = format;
+
+  const myFormat = printf(info => {
+    return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`;
+  });
+
+  const logger = createLogger({
     level: 'info',
-    format: winston.format.json(),
+    format: combine(
+      label({ label: 'right meow!' }),
+      timestamp(),
+      myFormat
+    ),
     transports: [
       new winston.transports.File({ filename: 'info.log', level: 'info' })
     ]
@@ -23,13 +34,6 @@ module.exports = async function(cbmain) {
         const localPouch = PouchDB.defaults({prefix: process.env.DATADIR});
         const express = require('express');
         const wallet = new ethers.Wallet(process.env.PRIVATEKEY);
-        /***
-         Nächster Schritt:
-         - Swarm dynamisch erweitern um Netzstabilität zu fördern
-         - Blacklist einführen
-         - Performance Werte tatsächlich schreiben (nicht nur irgend ein JSON Objekt)
-         - Lokaler Server aufsetzen für dAPPing
-        */
 
         const ipfsOptions = {
           EXPERIMENTAL: {
@@ -136,6 +140,7 @@ module.exports = async function(cbmain) {
                 const items = announcement.iterator({ limit: 100 })
                   .collect()
                   .map((e) => e.payload.value);
+                  logger.info("Refreshing "+items.length+" Announcements");
                   for(var i=0;i<items.length;i++) {
                     if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
