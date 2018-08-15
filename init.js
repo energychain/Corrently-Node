@@ -14,11 +14,6 @@ module.exports=function(cb) {
   // Will be called once finished
   });
   client.externalIp((err, ip) => {
-      if((typeof process.env.PUBLIC_IP!="undefined")&&(process.env.PUBLIC_IP!=null)) {
-        process.env.EXTERNAL_IP=process.env.PUBLIC_IP;
-      } else {
-        process.env.EXTERNAL_IP=ip;
-      }
       console.log("Public IP",process.env.EXTERNAL_IP);
       fs.stat(fname,function(err,stat) {
           if(typeof stat == "undefined") {
@@ -59,6 +54,11 @@ module.exports=function(cb) {
                   });
               });
           } else {
+            if((typeof process.env.PUBLIC_IP!="undefined")&&(process.env.PUBLIC_IP!=null)) {
+              process.env.EXTERNAL_IP=process.env.PUBLIC_IP;
+            } else {
+              process.env.EXTERNAL_IP=ip;
+            }
               if(typeof cb=="function") cb();
           }
       });
