@@ -54,6 +54,7 @@ module.exports=function(cb) {
                   });
               });
           } else {
+            require('dotenv').config();
             if((typeof process.env.PUBLIC_IP!="undefined")&&(process.env.PUBLIC_IP!=null)) {
               process.env.EXTERNAL_IP=process.env.PUBLIC_IP;
             } else {
