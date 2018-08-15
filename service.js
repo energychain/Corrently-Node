@@ -79,11 +79,16 @@ module.exports = async function(cbmain) {
           } else {
             const orbitdb = new OrbitDB(ipfs);
             const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
-            var signature=wallet.signMessage(kv.address.toString());
-            announcement.add({peer:kv.address.toString(),signature:signature,account:wallet.address,doc:change._id,swarm:process.env.IPFS_ID});
-            logger.info("Pubslished " +change);
+           	const kv2 = await orbitdb.keyvalue(change._id);
+           	await kv2.load();
+            var signature=wallet.signMessage(kv2.address.toString());
+            announcement.add({peer:kv2.address.toString(),signature:signature,account:wallet.address,doc:change._id,swarm:process.env.IPFS_ID,test:"ZOERNER"});
+            logger.info("Pubslished " +change._id);
             change._publishTimeStamp=new Date();
             await kv.set(change._id,change);
+            setTimeout(function() {
+              publish(kv,change)
+            },process.env.IDLE_REPUBLISH);
           }
         }
 
@@ -97,12 +102,23 @@ module.exports = async function(cbmain) {
           contract.balanceOf(item.account).then(async function(balance) {
             var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
               if((balance>0)&&(sign_address==item.account)&&(sign_address!=wallet.address)) {
+                if(typeof item.doc == "undefined") return;
+
                 logger.info("Added Peer " + item.account+ " "+item.doc);
                 const orbitdb = new OrbitDB(ipfs);
                 const kv = await orbitdb.keyvalue(peer);
                 await kv.load();
                 kv.events.on('replicated', (address) => {
+
                     const v = kv.get(item.doc);
+
+                    if(typeof v == "undefined") {
+                      console.log("******* HARD Missing ",item.account,item.doc,peer);
+                      return;
+                    }
+                    console.log("*********",address,v._publishTimeStamp);
+                    item.doc=v.doc;
+
                     if(typeof v._publishTimeStamp!="undefined") {
                         v.publishTimeStamp=v._publishTimeStamp;
                         delete v._publishTimeStamp;
@@ -117,14 +133,16 @@ module.exports = async function(cbmain) {
                     db.get(doc).then(function(dbdoc) {
                       v._rev=dbdoc._rev;
                       v._id=item.doc;
-                      return db.put(v);
+                      return db.put(v).catch(function(e) {
+
+                      });
                     }).then(function(response) {
                       db.compact().then(function (result) {
                       }).catch(function (err) {
                       });
                     }).catch(function (err) {
                       if(typeof v._rev != "undefined") delete v._rev;
-                      return db.put(v).catch(function(e) {logger.info("Insert",e,item.account,item.doc)});
+                      return db.put(v).catch(function(e) {console.log("Insert",err,e,item.account,item.doc)});
                     });
                 });
               } else {
@@ -138,13 +156,15 @@ module.exports = async function(cbmain) {
               const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
 
               const refreshItems = function() {
-                const items = announcement.iterator({ limit: 100 })
-                  .collect()
-                  .map((e) => e.payload.value);
+                const dbitems = announcement.iterator({ limit: -1,reverse:false,gt:"QmXnQpwKBXzBZZuVeFQ8kAGTAZ5g6kdG5QaxZrZe6DjcY9" })
+                  .collect();
+                  //console.log(dbitems);
+                  const items=dbitems.map((e) => e.payload.value);
                   logger.info("Refreshing "+items.length+" Announcements");
-                  var swarmPeers=[];
+                  var swarmPeers=[];                  
                   for(var i=0;i<items.length;i++) {
                     if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
+                      logger.info("Monitor Peer "+items[i].peer+" doc "+items[i].doc);
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
                       subscribePeer(items[i]);
 
@@ -180,7 +200,6 @@ module.exports = async function(cbmain) {
               logger.info("Announcement Channel "+announcement.address.toString());
 
               announcement.events.on('replicated', (address) => {
-                logger.info("Announcement Event "+address);
                 refreshItems();
               })
               refreshItems();
