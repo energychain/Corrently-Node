@@ -14,7 +14,7 @@ module.exports=function(cb) {
   // Will be called once finished
   });
   client.externalIp((err, ip) => {
-      console.log("Public IP",process.env.EXTERNAL_IP);
+
       fs.stat(fname,function(err,stat) {
           if(typeof stat == "undefined") {
               console.log(".env does not exist - creating new!");
@@ -59,6 +59,7 @@ module.exports=function(cb) {
             } else {
               process.env.EXTERNAL_IP=ip;
             }
+            console.log("Public IP (set in .env)",process.env.EXTERNAL_IP);
               if(typeof cb=="function") cb();
           }
       });
