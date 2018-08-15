@@ -12,12 +12,12 @@ module.exports = async function(cbmain) {
   const logger = createLogger({
     level: 'info',
     format: combine(
-      label({ label: 'right meow!' }),
+      label({ label: 'Corrently-Node' }),
       timestamp(),
       myFormat
     ),
     transports: [
-      new winston.transports.File({ filename: 'info.log', level: 'info' }),
+      new transports.File({ filename: 'info.log', level: 'info' }),
       new transports.Console()
     ]
   });
@@ -161,7 +161,7 @@ module.exports = async function(cbmain) {
               setInterval(announceThis,process.env.IDLE_ANNOUNCEMENT);
               announceThis();
 
-              logger.info("Announcement Channel",announcement.address.toString());
+              logger.info("Announcement Channel "+announcement.address.toString());
 
               announcement.events.on('replicated', (address) => {
                 logger.info("Announcement Event "+address);
@@ -192,7 +192,7 @@ module.exports = async function(cbmain) {
             var connectPeer = function() {
               if(peers.length>0) {
                   var peer=peers.pop();
-                  ipfs.swarm.connect(peer).then(function() { logger.info("Connected",peer); connectPeer();}).catch(function() { logger.info("Failed",peer); connectPeer();});
+                  ipfs.swarm.connect(peer).then(function() { logger.info("Connected "+peer); connectPeer();}).catch(function() { logger.info("Failed "+peer); connectPeer();});
               }
             }
             connectPeer();
