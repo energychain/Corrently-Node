@@ -146,11 +146,26 @@ module.exports = async function(cbmain) {
                     if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
                       subscribePeer(items[i]);
+                      var swarmPeers=[];
                       if((typeof items[i] != "undefined")&&(typeof items[i].swarm != "undefined")) {
-                            ipfs.swarm.connect(items[i].swarm).then(function() { logger.info("Connected Swarm Peer "+items[i].swarm); connectPeer();}).catch(function() { logger.info("Failed Swarm Peer "+items[i].swarm);});
+                        swarmPeers.push(items[i].swarm)
                       }
                     }
                   }
+                    var connectSwarms=function() {
+                          if(swarmPeers.length>0) {
+                              peer = swarmPeers.pop();
+                              ipfs.swarm.connect(peer).then(function() {
+                                logger.info("Connected Swarm Peer "+peer); connectPeer();
+                                connectSwarms();
+                              }).catch(function() {
+                                logger.info("Failed Swarm Peer "+peer);
+                                connectSwarms();
+                              });
+                          }
+                      }
+                      connectSwarms();
+                  
               }
 
               var announceThis=function() {
