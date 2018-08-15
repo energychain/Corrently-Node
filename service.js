@@ -142,11 +142,12 @@ module.exports = async function(cbmain) {
                   .collect()
                   .map((e) => e.payload.value);
                   logger.info("Refreshing "+items.length+" Announcements");
+                  var swarmPeers=[];
                   for(var i=0;i<items.length;i++) {
                     if(typeof subscribtions[items[i].peer+"/"+items[i].doc] == "undefined") {
                       subscribtions[items[i].peer+"/"+items[i].doc]=items[i].account;
                       subscribePeer(items[i]);
-                      var swarmPeers=[];
+
                       if((typeof items[i] != "undefined")&&(typeof items[i].swarm != "undefined")) {
                         swarmPeers.push(items[i].swarm)
                       }
@@ -154,7 +155,7 @@ module.exports = async function(cbmain) {
                   }
                     var connectSwarms=function() {
                           if(swarmPeers.length>0) {
-                              peer = swarmPeers.pop();
+                              var peer = swarmPeers.pop();
                               ipfs.swarm.connect(peer).then(function() {
                                 logger.info("Connected Swarm Peer "+peer); connectPeer();
                                 connectSwarms();
@@ -165,7 +166,7 @@ module.exports = async function(cbmain) {
                           }
                       }
                       connectSwarms();
-                  
+
               }
 
               var announceThis=function() {
