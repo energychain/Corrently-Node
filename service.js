@@ -17,7 +17,8 @@ module.exports = async function(cbmain) {
       myFormat
     ),
     transports: [
-      new winston.transports.File({ filename: 'info.log', level: 'info' })
+      new winston.transports.File({ filename: 'info.log', level: 'info' }),
+      new transports.Console()
     ]
   });
 
