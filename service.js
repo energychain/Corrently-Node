@@ -34,6 +34,7 @@ module.exports = async function(cbmain) {
       const PouchDB = require('pouchdb');
       PouchDB.plugin(require('pouchdb-upsert'));
       const localPouch = PouchDB.defaults({prefix: process.env.DATADIR});
+      localPouch.plugin(require('pouchdb-upsert'));
       const express = require('express');
       const wallet = new ethers.Wallet(process.env.PRIVATEKEY);
       var ipfs_peers = [];
@@ -110,27 +111,18 @@ module.exports = async function(cbmain) {
                                  const remoteorbit = await orbitdb.docs(item.peer).catch(function() {logger.info("Ignore legacy");});
                                  if(typeof remoteorbit!="undefined") {
                                    logger.info("Monitoring " + item.account+ " "+item.doc);
-                                   remoteorbit.events.on('replicated', () => {
-                                      const result = remoteorbit.iterator({ limit: -1 }).collect().map(e => e.payload.value)
-                                      logger.info("Remote Items "+item.account+" "+result.length);
-
-                                      function upsert() {
-                                        if(result.length>0) {
-                                          var doc=result.pop();
-                                          console.log("UPDATE",doc);
-                                          remotedb.upsert(doc._id,function(orgdoc) {
+                                   remoteorbit.events.on('replicated', async () => {
+                                      const docs = await remoteorbit.get(item.doc);
+                                      const doc = docs[0];
+                                      if(typeof doc != "undefined") {
+                                      remotedb.upsert(doc._id,function(orgdoc) {
                                               return doc;
                                           }).then(function() {
-                                            upsert();
+                                            logger.info("Upsert "+doc._id+" for "+item.account);
                                           }).catch(function(e) {
                                             logger.info("Upsert issue:"+e);
-                                            upsert();
                                           });
-
-                                        }
                                       }
-                                      if(result.length>0) upsert();
-
                                     })
                                 }
 
@@ -143,8 +135,8 @@ module.exports = async function(cbmain) {
             var result=[];
 
             for(var i=0;i<preProcessed.length;i++) {
-                  if(typeof orbitpeers[preProcessed[i].peer]=="undefined") {
-                    orbitpeers[preProcessed[i].peer]=preProcessed[i];
+                  if(typeof orbitpeers[preProcessed[i].peer+preProcessed[i].doc]=="undefined") {
+                    orbitpeers[preProcessed[i].peer+preProcessed[i].doc]=preProcessed[i];
                     result.push(preProcessed[i]);
                   }
             }
