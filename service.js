@@ -160,6 +160,9 @@ module.exports = async function(cbmain) {
             var signature=wallet.signMessage(localdb.address.toString());
             announcement.add({peer:localdb.address.toString(),signature:signature,account:wallet.address,doc:change.doc._id,swarm:process.env.IPFS_ID});
           })
+          if(typeof cbmain =="function") {
+           cbmain(nodedb,localdb);
+          }
       });
   });
 }
