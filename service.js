@@ -65,14 +65,19 @@ module.exports = async function(cbmain) {
          ipfs.id(function(err,id) {
            process.env.IPFS_ID="/ip4/"+process.env.EXTERNAL_IP+"/tcp/4002/ipfs/"+id.id;
            logger.info("IPFS ID of Node "+process.env.IPFS_ID);
-
          });
 
          const orbitdb = new OrbitDB(ipfs)
          const localdb = await orbitdb.docs("local");
          const app = express();
          PouchDB.defaults({prefix: ''});
+         app.use('/dapp', express.static('dapp'));
+         if((typeof process.env.DUMPS != "undefined")&&(process.env.DUMPS!=null)) {
+           logger.info("Serving dumps");
+           app.use('/dumps', express.static(process.env.DUMPS));
+         }
          app.use('/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
+
          app.listen(process.env.POUCHDB_FAUXTON_PORT);
 
          // Ensure we have IPFS Peers we could talk too
@@ -88,7 +93,6 @@ module.exports = async function(cbmain) {
           const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
           var orbitpeers=[];
           announcement.events.on('replicated', () => {
-
 
             var preProcessed = announcement.iterator({ limit: -1 }).collect().map(e => e.payload.value)
 
@@ -119,6 +123,13 @@ module.exports = async function(cbmain) {
                                               return doc;
                                           }).then(function() {
                                             logger.info("Upsert "+doc._id+" for "+item.account);
+                                            if((typeof process.env.DUMPS != "undefined")&&(process.env.DUMPS!=null)) {
+                                              fs.mkdir(process.env.DUMPS,function(e){
+                                                    fs.mkdir(process.env.DUMPS+item.account,function(e) {
+                                                      fs.writeFile(process.env.DUMPS+item.account+"/"+doc._id+".json",JSON.stringify(doc),function(e) {});
+                                                    });
+                                              });
+                                            }
                                           }).catch(function(e) {
                                             logger.info("Upsert issue:"+e);
                                           });
