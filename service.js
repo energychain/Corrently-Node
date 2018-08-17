@@ -191,6 +191,20 @@ module.exports = async function(cbmain) {
 
           // Ensure we have a local bound database
           var nodedb = new localPouch("local");
+          // Publish Node info
+          var publishNodeInfo = function() {
+              var nodeinfo = {};
+              nodeinfo._id="info_node"
+              nodeinfo.address=wallet.address;
+              nodeinfo.updated=new Date();
+              nodeinfo.external_ip=process.env.EXTERNAL_IP;
+              nodeinfo.public_ip=process.env.PUBLIC_IP;
+              nodeinfo.ipfs_peer=localdb.address.toString();
+              localdb.put(nodeinfo);
+          }
+          setTimeout(publishNodeInfo,process.env.IDLE_REPUBLISH);
+          publishNodeInfo();
+          
           var nodechanges = nodedb.changes({
             since: 'now',
             live: true,
