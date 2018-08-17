@@ -29,3 +29,5 @@ corrently-node -j FILENAME.json -t DOCNAME
 ```
 
 You could add `-m` to monitor for changes of file. File/Document will be automtically republished on change.
+
+If you specify '-a' option a values field (array) will be appended with content of file specified with '-j'

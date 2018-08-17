@@ -24,7 +24,8 @@ startStopDaemon({}, function() {
               { name: 'restart', type: Boolean },
               { name: 'json', alias: 'j', type: String },
               { name: 'tag', alias: 't', type: String },
-              { name: 'monitor', alias: 'm',type: Boolean }
+              { name: 'monitor', alias: 'm',type: Boolean },
+              { name: 'append',alias:'a',type: Boolean}
             ]
             const commandLineArgs = require('command-line-args')
             const options = commandLineArgs(optionDefinitions);
@@ -35,19 +36,33 @@ startStopDaemon({}, function() {
                   var src =JSON.parse(fs.readFileSync(options.json));
                   if(typeof src._id != "undefined") delete src._id;
                   if(typeof src._rev != "undefined") delete src._rev;
-                  nodedb.upsert(docname,function(orgdoc) {
-                          return src;
-                  }).then(function() {
+                  if(typeof options.append == "undefined") {
+                    nodedb.upsert(docname,function(orgdoc) {
+                            return src;
+                    }).then(function() {
+                        if(typeof options.monitor != "undefined") {
+                          fs.watchFile(options.json,function() {
+                            updateFile();
+                          });
+                        }
+                    });
+                  } else {
+                    nodedb.upsert(docname,function(orgdoc) {
+                            if(typeof orgdoc.values == "undefined") orgdoc.values=[];
+                            console.log(options.append);
+                            orgdoc.values.push(src);
+                            return orgdoc;
+                    }).then(function() {
                       if(typeof options.monitor != "undefined") {
                         fs.watchFile(options.json,function() {
                           updateFile();
                         });
                       }
-                  });
+                    });
+                  }
                 }
                 updateFile();
             }
-
           }).catch(function (err) {
             service(function() {
                 bootstrap();

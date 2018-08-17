@@ -91,6 +91,7 @@ module.exports = async function(cbmain) {
 
          // Ensure we listen to annouuncements and are able to publish to
           const announcement = await orbitdb.log(ANNOUNCEMENT_CHANNEL);
+          const verifications = await orbitdb.log('verifications');
           var orbitpeers=[];
           announcement.events.on('replicated', () => {
 
@@ -114,30 +115,58 @@ module.exports = async function(cbmain) {
                                  const remotedb = new localPouch(item.account);
                                  const remoteorbit = await orbitdb.docs(item.peer).catch(function() {logger.info("Ignore legacy");});
                                  if(typeof remoteorbit!="undefined") {
-                                   logger.info("Monitoring " + item.account+ " "+item.doc);
-                                   remoteorbit.events.on('replicated', async () => {
-                                      const docs = await remoteorbit.get(item.doc);
-                                      const doc = docs[0];
-                                      if(typeof doc != "undefined") {
-                                      remotedb.upsert(doc._id,function(orgdoc) {
-                                              return doc;
-                                          }).then(function() {
-                                            logger.info("Upsert "+doc._id+" for "+item.account);
-                                            if((typeof process.env.DUMPS != "undefined")&&(process.env.DUMPS!=null)) {
-                                              fs.mkdir(process.env.DUMPS,function(e){
-                                                    fs.mkdir(process.env.DUMPS+item.account,function(e) {
-                                                      fs.writeFile(process.env.DUMPS+item.account+"/"+doc._id+".json",JSON.stringify(doc),function(e) {});
-                                                    });
-                                              });
-                                            }
-                                          }).catch(function(e) {
-                                            logger.info("Upsert issue:"+e);
-                                          });
-                                      }
-                                    })
-                                }
+                                           logger.info("Monitoring " + item.account+ " "+item.doc);
+                                           remoteorbit.events.on('replicated', async () => {
+                                              const docs = await remoteorbit.get(item.doc);
+                                              const doc = docs[0];
+                                              if(typeof doc != "undefined") {
+                                              remotedb.upsert(doc._id,function(orgdoc) {
+                                                      return doc;
+                                                  }).then(function() {
+                                                    logger.info("Upsert "+doc._id+" for "+item.account);
+                                                    if((typeof process.env.DUMPS != "undefined")&&(process.env.DUMPS!=null)) {
+                                                      fs.mkdir(process.env.DUMPS,function(e){
+                                                            fs.mkdir(process.env.DUMPS+item.account,function(e) {
+                                                              fs.writeFile(process.env.DUMPS+item.account+"/"+doc._id+".json",JSON.stringify(doc),function(e) {});
+                                                            });
+                                                      });
+                                                    }
+                                                    var signature=wallet.signMessage(item.account+"_"+doc._id);
+                                                    verifications.add({account:item.account,doc:doc._id,verifier:wallet.address,signature:signature});
+                                                  }).catch(function(e) {
+                                                    logger.info("Upsert issue:"+e);
+                                                  });
+                                              }
+                                            })
+                                    }
 
-
+                                    // Verification hook
+                                    if(typeof item.verification != "undefined") {
+                                        const verifyorbit = await orbitdb.log(item.verification);
+                                        verifyorbit.events.on('replicated', () => {
+                                          var preProcessed = verifyorbit.iterator({ limit: -1 }).collect().map(e => e.payload.value);
+                                          var processResults = function() {
+                                              if(preProcessed.length>0) {
+                                                  var item = preProcessed.pop();
+                                                  var sign_address = ethers.Wallet.verifyMessage(item.account+"_"+item.doc, item.signature);
+                                                  if(sign_adress==item.verifier) {
+                                                    const remotedb = new localPouch(item.account);
+                                                    remotedb.upsert(item.doc,function(orgdoc) {
+                                                            if(typeof orgdoc.verifications == "undefined") orgdoc.verifications = {};
+                                                            if(typeof orgdoc.verifications[item.verifier]=="undefined") orgdoc.verifications[item.verifier]=item;
+                                                            return orgdoc;
+                                                        }).then(function() {
+                                                            logger.info("Verified "+item.doc+" "+item.account+" by "+item.verifier);
+                                                            processResults();
+                                                        });
+                                                  } else {
+                                                    processResults();
+                                                  }
+                                              }
+                                          }
+                                          processResults();
+                                        });
+                                    }
                           }
                           processResults();
                     });
@@ -169,7 +198,7 @@ module.exports = async function(cbmain) {
             logger.info("Local Document change: "+change.doc._id);
             localdb.put(change.doc);
             var signature=wallet.signMessage(localdb.address.toString());
-            announcement.add({peer:localdb.address.toString(),signature:signature,account:wallet.address,doc:change.doc._id,swarm:process.env.IPFS_ID});
+            announcement.add({peer:localdb.address.toString(),signature:signature,account:wallet.address,doc:change.doc._id,swarm:process.env.IPFS_ID,verifications:verifications.address.toString()});
           })
           if(typeof cbmain =="function") {
            cbmain(nodedb,localdb);
