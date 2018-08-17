@@ -141,9 +141,10 @@ module.exports = async function(cbmain) {
                                     }
 
                                     // Verification hook
-                                    if(typeof item.verification != "undefined") {
-                                        const verifyorbit = await orbitdb.log(item.verification);
+                                    if(typeof item.verifications != "undefined") {
+                                        const verifyorbit = await orbitdb.log(item.verifications);
                                         verifyorbit.events.on('replicated', () => {
+                                          logger.info("Verifieder Event");
                                           var preProcessed = verifyorbit.iterator({ limit: -1 }).collect().map(e => e.payload.value);
                                           var processResults = function() {
                                               if(preProcessed.length>0) {
