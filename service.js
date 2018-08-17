@@ -133,6 +133,7 @@ module.exports = async function(cbmain) {
                                                     }
                                                     var signature=wallet.signMessage(item.account+"_"+doc._id);
                                                     verifications.add({account:item.account,doc:doc._id,verifier:wallet.address,signature:signature});
+                                                    remotedb.compact();
                                                   }).catch(function(e) {
                                                     logger.info("Upsert issue:"+e);
                                                   });
@@ -190,7 +191,9 @@ module.exports = async function(cbmain) {
 
 
           // Ensure we have a local bound database
+          localPouch.plugin(require('pouchdb-upsert'));
           var nodedb = new localPouch("local");
+
           // Publish Node info
           var publishNodeInfo = async function() {
               var nodeinfo = {};
@@ -200,11 +203,13 @@ module.exports = async function(cbmain) {
               nodeinfo.external_ip=process.env.EXTERNAL_IP;
               nodeinfo.public_ip=process.env.PUBLIC_IP;
               nodeinfo.ipfs_peer=localdb.address.toString();
-              await nodedb.put(nodeinfo);
-              logger.info("Updated info_node");
+              nodedb.upsert(nodeinfo._id,function(orgdoc) {
+                      return nodeinfo;
+                  }).then(function() {
+                    logger.info("Updated info_node");
+              });
           }
-          setTimeout(publishNodeInfo,process.env.IDLE_REPUBLISH);
-          publishNodeInfo();
+
 
           var nodechanges = nodedb.changes({
             since: 'now',
@@ -216,6 +221,9 @@ module.exports = async function(cbmain) {
             var signature=wallet.signMessage(localdb.address.toString());
             announcement.add({peer:localdb.address.toString(),signature:signature,account:wallet.address,doc:change.doc._id,swarm:process.env.IPFS_ID,verifications:verifications.address.toString()});
           })
+          setInterval(publishNodeInfo,process.env.IDLE_REPUBLISH);
+          setTimeout(publishNodeInfo,5000);
+
           if(typeof cbmain =="function") {
            cbmain(nodedb,localdb);
           }
