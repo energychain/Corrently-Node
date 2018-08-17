@@ -150,7 +150,7 @@ module.exports = async function(cbmain) {
                                               if(preProcessed.length>0) {
                                                   var item = preProcessed.pop();
                                                   var sign_address = ethers.Wallet.verifyMessage(item.account+"_"+item.doc, item.signature);
-                                                  if(sign_adress==item.verifier) {
+                                                  if(sign_address==item.verifier) {
                                                     const remotedb = new localPouch(item.account);
                                                     remotedb.upsert(item.doc,function(orgdoc) {
                                                             if(typeof orgdoc.verifications == "undefined") orgdoc.verifications = {};

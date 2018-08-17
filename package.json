@@ -1,6 +1,6 @@
 {
 	"name": "corrently-node",
-	"version": "0.0.14",
+	"version": "0.0.15",
 	"description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
 	"keywords": [
 		"corrently",
