@@ -1,6 +1,6 @@
 {
 	"name": "corrently-node",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
 	"keywords": [
 		"corrently",
@@ -29,6 +29,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
+		"command-line-args": "^5.0.2",
 		"dotenv": "^6.0.0",
 		"ethers": "^3.0.26",
 		"express": "^4.16.3",
