@@ -1,4 +1,4 @@
-cmd: make publish
+cmd: make commit
 targets:
   Development:
       cmd: "make dev"
