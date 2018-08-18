@@ -78,7 +78,7 @@ module.exports = async function(cbmain) {
          }
          app.use('/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
 
-         app.listen(process.env.POUCHDB_FAUXTON_PORT);
+         app.listen(process.env.POUCHDB_FAUXTON_PORT,'127.0.0.1');
 
          // Ensure we have IPFS Peers we could talk too
          ipfs_peers=process.env.SWARM.split(",");
@@ -133,7 +133,7 @@ module.exports = async function(cbmain) {
                                                             });
                                                       });
                                                     }
-																										if(orgverifies.length<2) {
+																										if((typeof orgverifies == "undefined")||(orgverifies.length<2)) {
 	                                                    var signature=wallet.signMessage(item.account+"_"+doc._id);
 	                                                    verifications.add({account:item.account,doc:doc._id,verifier:wallet.address,signature:signature});
 																										}

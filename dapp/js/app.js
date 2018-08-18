@@ -132,9 +132,13 @@ function createNodeInfo(dbname) {
   var db = new PouchDB('http://'+location.host+'/'+dbname);
   db.get("info_node").then(function(doc) {
       var html="";
-      html+="<div id='"+dbname+"' class='card'>";
+      var addClasses="";
+      if(typeof doc.verifications=="undefined") {
+          addClasses=" text-white bg-warning";
+      }
+      html+="<div id='"+dbname+"' class='card"+addClasses+"'>";
       html+='<div class="card-header">';
-      html+='<a href="#" onclick="$(\'#card-body-'+dbname+'\').collapse(\'toggle\')">'
+      html+='<a href="#" class="btn btn-default" onclick="$(\'#card-body-'+dbname+'\').collapse(\'toggle\')">'
       html+=dbname;
       html+="</a>";
       html+="</div>";

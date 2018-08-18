@@ -1,1 +1,4 @@
 cmd: make publish
+targets:
+  Development:
+      cmd: "make dev"
