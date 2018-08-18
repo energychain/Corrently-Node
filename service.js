@@ -120,7 +120,9 @@ module.exports = async function(cbmain) {
                                               const docs = await remoteorbit.get(item.doc);
                                               const doc = docs[0];
                                               if(typeof doc != "undefined") {
+																								var orgverifies=[];
                                               remotedb.upsert(doc._id,function(orgdoc) {
+																											orgverifies=orgdoc.verifications;
                                                       return doc;
                                                   }).then(function() {
                                                     logger.info("Upsert "+doc._id+" for "+item.account);
@@ -131,8 +133,10 @@ module.exports = async function(cbmain) {
                                                             });
                                                       });
                                                     }
-                                                    var signature=wallet.signMessage(item.account+"_"+doc._id);
-                                                    verifications.add({account:item.account,doc:doc._id,verifier:wallet.address,signature:signature});
+																										if(orgverifies.length<2) {
+	                                                    var signature=wallet.signMessage(item.account+"_"+doc._id);
+	                                                    verifications.add({account:item.account,doc:doc._id,verifier:wallet.address,signature:signature});
+																										}
                                                     remotedb.compact();
                                                   }).catch(function(e) {
                                                     logger.info("Upsert issue:"+e);
