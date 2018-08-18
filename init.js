@@ -22,10 +22,8 @@ module.exports=function(cb) {
               const wallet = new ethers.Wallet.createRandom();
               // try to create  a new ENV file
               var content="";
-              content+='ACCOUNT="'+wallet.address+'"';
-              content+='\n';
-              content+='PRIVATEKEY="'+wallet.privateKey+'"';
-              content+='\n';
+              if(typeof process.env.ACCOUNT=="undefined") content+='ACCOUNT="'+wallet.address+'"\n';
+              if(typeof process.env.PRIVATEKEY=="undefined") content+='PRIVATEKEY="'+wallet.privateKey+'"\n';              
               content+='# No Change required below (under normal operation)';
               content+='\n';
               content+="SWARM=/ip4/52.59.191.11/tcp/4002/ipfs/QmcDy1vs1U39AG6Ls5XqTqwamdsyWkrTcgVYzJtAyou78j,/ip4/18.184.17.153/tcp/4002/ipfs/QmRy3WXC9yyNGNpztP8yAjfWYqJJs5Yg6SzGKfjhr63kg8,/ip4/108.61.210.201/tcp/4002/ipfs/QmPGfRp7VL7XiR28QXVWTzPNZxGRngVfgrT3DCuGMuLucD";
