@@ -95,7 +95,7 @@ module.exports = async function(cbmain) {
           var orbitpeers=[];
           announcement.events.on('replicated', () => {
 
-            var preProcessed = announcement.iterator({ limit: -1 }).collect().map(e => e.payload.value)
+            var preProcessed = announcement.iterator({ limit: 100 }).collect().map(e => e.payload.value)
 
             const processResults=function() {
                 if(result.length>0) {
@@ -146,7 +146,7 @@ module.exports = async function(cbmain) {
                                         const verifyorbit = await orbitdb.log(item.verifications);
                                         verifyorbit.events.on('replicated', () => {
                                           logger.info("Verifieder Event");
-                                          var preProcessed = verifyorbit.iterator({ limit: -1 }).collect().map(e => e.payload.value);
+                                          var preProcessed = verifyorbit.iterator({ limit: 100 }).collect().map(e => e.payload.value);
                                           var processResults = function() {
                                               if(preProcessed.length>0) {
                                                   var item = preProcessed.pop();
