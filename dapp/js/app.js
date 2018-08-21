@@ -1,5 +1,5 @@
 function previewDoc(dbname,docid) {
-  var db = new PouchDB('http://'+location.host+'/'+dbname);
+  var db = new PouchDB('http://'+location.host+'/db/'+dbname);
   db.get(docid).then(function(doc) {
       var html="<h3>"+docid+"</h3>";
 
@@ -109,7 +109,7 @@ function previewDoc(dbname,docid) {
   });
 }
 function fetchAllDocIds(dbname) {
-  var db = new PouchDB('http://'+location.host+'/'+dbname);
+  var db = new PouchDB('http://'+location.host+'/db/'+dbname);
   db.allDocs({
       include_docs: false,
       attachments: false
@@ -129,7 +129,7 @@ function fetchAllDocIds(dbname) {
 }
 
 function createNodeInfo(dbname) {
-  var db = new PouchDB('http://'+location.host+'/'+dbname);
+  var db = new PouchDB('http://'+location.host+'/db/'+dbname);
   db.get("info_node").then(function(doc) {
       var html="";
       var addClasses="";
@@ -164,7 +164,7 @@ function createNodeInfo(dbname) {
       html+='</div>';
       html+='</div>';
       html+="<hr/>";
-      html+="<div id='preview_"+dbname+"' class='bg-light'></div>";
+      html+="<div id='preview_"+dbname+"' class=''></div>";
       html+="</div>";
       html+="</div>";
       $('#app').append(html);
@@ -199,7 +199,7 @@ function createNodeInfo(dbname) {
 }
 
 $(document).ready(function() {
-    $.getJSON('http://'+location.host+'/_all_dbs',function(data) {
+    $.getJSON('http://'+location.host+'/db/_all_dbs',function(data) {
         $.each(data,function(key,value) {
 							if((value!="_users")&&(value!="_replicator"))
               createNodeInfo(value);

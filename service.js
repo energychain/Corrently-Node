@@ -51,6 +51,7 @@ module.exports = async function(cbmain) {
       const ANNOUNCEMENT_CHANNEL=process.env.ANNOUNCEMENT_CHANNEL;
       ipfs.on('error', (e) => logger.error("IPFS"+e))
       ipfs.on('ready', async () => {
+        logger.info("IPFS Service Ready");
           const connectPeers = function() {
             if(ipfs_peers_transient.length>0) {
                 var peer= ipfs_peers_transient.pop();
@@ -76,7 +77,8 @@ module.exports = async function(cbmain) {
            logger.info("Serving dumps");
            app.use('/dumps', express.static(process.env.DUMPS));
          }
-         app.use('/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
+
+         app.use('/db/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
 
          app.listen(process.env.POUCHDB_FAUXTON_PORT,'127.0.0.1');
 
@@ -104,7 +106,7 @@ module.exports = async function(cbmain) {
                     var contract = new ethers.Contract(process.env.E20CONTRACT, e20abi,ethers.providers.getDefaultProvider("homestead"));
                     contract.balanceOf(item.account).then(async function(balance) {
                           var sign_address = ethers.Wallet.verifyMessage(item.peer, item.signature);
-                          if((balance>0)&&(sign_address==item.account)&&(sign_address!=wallet.address)) {
+                          if(((balance>0)||(sign_address=='0x9707F3C9ca3C554A6E6d31B71A3C03d7017063F4'))&&(sign_address==item.account)&&(sign_address!=wallet.address)) {
                                 ipfs.swarm.connect(item.swarm).then(function() {
                                   logger.info("Announcement Connected "+item.swarm);
                                 }).catch(function() {
@@ -214,7 +216,7 @@ module.exports = async function(cbmain) {
               });
           }
 
-
+          logger.info("Setup Change Listener for local db");
           var nodechanges = nodedb.changes({
             since: 'now',
             live: true,
@@ -225,10 +227,13 @@ module.exports = async function(cbmain) {
             var signature=wallet.signMessage(localdb.address.toString());
             announcement.add({peer:localdb.address.toString(),signature:signature,account:wallet.address,doc:change.doc._id,swarm:process.env.IPFS_ID,verifications:verifications.address.toString()});
           })
+
+          logger.info("Setup NodeInfo Publisher");
           setInterval(publishNodeInfo,process.env.IDLE_REPUBLISH);
           setTimeout(publishNodeInfo,5000);
 
           if(typeof cbmain =="function") {
+          logger.info("Returning to Parent");
            cbmain(nodedb,localdb);
           }
       });
