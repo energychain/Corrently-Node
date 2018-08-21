@@ -16,7 +16,7 @@ startStopDaemon({}, function() {
   localPouch.plugin(require('pouchdb-upsert'));
   var nodedb = new localPouch("http://localhost:"+process.env.POUCHDB_FAUXTON_PORT+"/db/local");
 
-  const bootstrap=function() {
+  const bootstrap=function(app) {
           console.log("Service running - hand over to local");
 
           nodedb.info().then(function (result) {
@@ -39,27 +39,34 @@ startStopDaemon({}, function() {
             if(typeof options.publish != "undefined") {
               console.log("***********************");
               var recursive = require("recursive-readdir");
-              recursive(options.publish, function (err, files) {
+              const publishFiles=function() {
+                  recursive(options.publish, function (err, files) {
 
-                  const publishFile=function() {
-                      if(files.length>0) {
-                            file = files.pop();
-                            nodedb.upsert(file,function(orgdoc) {
-                              return {
-                                _id: file,
-                                _attachments: {
-                                  "file": {
-                                    content_type: 'text/plain',
-                                    data: fs.readFileSync(file)
-                                  }
-                                }
-                            };
-                          }).then(function() { publishFile();});
+                      const publishFile=function() {
+                          if(files.length>0) {
+                                file = files.pop();
+                                console.log("* Publishing "+file);
+                                nodedb.upsert(file,function(orgdoc) {
+                                  return {
+                                    _id: file,
+                                    attachment: {
+                                      "file": {
+                                        content_type: 'text/plain',
+                                        data: fs.readFileSync(file)
+                                      }
+                                    }
+                                };
+                              }).then(function() { publishFile();});
+                          }
+
                       }
-
-                  }
-                   publishFile();
-              });
+                      publishFile();
+                  });
+              };
+              setTimeout(publishFiles,5000);
+              setInterval(publishFiles,60000*5);
+              console.log(typeof app);
+              app.use('/local/*', express.static(options.publish));
             }
             if(typeof options.json != "undefined") {
                 var docname = "file";
@@ -94,10 +101,10 @@ startStopDaemon({}, function() {
                 }
                 updateFile();
             }
-              opn('http://localhost:4009/dapp/');
+              //opn('http://localhost:4009/dapp/');
           }).catch(function (err) {
-            service(function() {
-                bootstrap();
+            service(function(app) {
+                bootstrap(app);
             });
           });
   }

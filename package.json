@@ -1,6 +1,6 @@
 {
 	"name": "corrently-node",
-	"version": "0.0.24",
+	"version": "0.0.25",
 	"description": "Decentralized Node Operation for Corrently Asset (by STROMDAO)",
 	"keywords": [
 		"corrently",
@@ -40,6 +40,7 @@
 		"ipfs-log": "^4.1.2",
 		"ipfs-pubsub-room": "^1.4.0",
 		"ipfsd-ctl": "^0.39.1",
+		"leveldown": "^4.0.1",
 		"nat-upnp-2": "^3.0.3",
 		"npm": "^6.3.0",
 		"opn": "^5.3.0",

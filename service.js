@@ -78,6 +78,26 @@ module.exports = async function(cbmain) {
            app.use('/dumps', express.static(process.env.DUMPS));
          }
 
+         app.use('/content/', function (req, res, next) {
+           var url = req.originalUrl;
+           var db = url.substr(9,42);
+           var doc = url.substr(52);
+
+           if(url.indexOf("/local/")>0) {
+             db="local";
+             doc=url.substr(15);
+             var content=fs.readFileSync(doc);             
+             res.send(content.toString());
+           } else {
+             var p = new localPouch(db);
+             p.get(doc).then(function(content) {
+                res.send(new Buffer(content.attachment.file.data.data).toString());
+                next(); // pass control to the next handler
+             }).catch(function(e) {
+               res.send(e);
+             })
+           }
+        });
          app.use('/db/', require('express-pouchdb')(localPouch,{inMemoryConfig:true}));
 
          app.listen(process.env.POUCHDB_FAUXTON_PORT,'127.0.0.1');
@@ -151,7 +171,7 @@ module.exports = async function(cbmain) {
                                     if(typeof item.verifications != "undefined") {
                                         const verifyorbit = await orbitdb.log(item.verifications);
                                         verifyorbit.events.on('replicated', () => {
-                                          logger.info("Verifieder Event");
+                                          logger.debug("Verifieer Event");
                                           var preProcessed = verifyorbit.iterator({ limit: 10 }).collect().map(e => e.payload.value);
                                           var processResults = function() {
                                               if(preProcessed.length>0) {
@@ -164,7 +184,7 @@ module.exports = async function(cbmain) {
                                                             if(typeof orgdoc.verifications[item.verifier]=="undefined") orgdoc.verifications[item.verifier]=item;
                                                             return orgdoc;
                                                         }).then(function() {
-                                                            logger.info("Verified "+item.doc+" "+item.account+" by "+item.verifier);
+                                                            logger.debug("Verified "+item.doc+" "+item.account+" by "+item.verifier);
                                                             processResults();
                                                         });
                                                   } else {
@@ -216,6 +236,7 @@ module.exports = async function(cbmain) {
               });
           }
 
+
           logger.info("Setup Change Listener for local db");
           var nodechanges = nodedb.changes({
             since: 'now',
@@ -234,7 +255,7 @@ module.exports = async function(cbmain) {
 
           if(typeof cbmain =="function") {
           logger.info("Returning to Parent");
-           cbmain(nodedb,localdb);
+           cbmain(app,nodedb,localdb);
           }
       });
   });
