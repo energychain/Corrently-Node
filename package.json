@@ -36,7 +36,7 @@
 		"express": "^4.16.3",
 		"express-pouchdb": "^4.0.1",
 		"install": "^0.12.1",
-		"ipfs": "^0.31.2",
+		"ipfs": "^0.65.0",
 		"ipfs-log": "^4.1.2",
 		"ipfs-pubsub-room": "^1.4.0",
 		"ipfsd-ctl": "^0.39.1",
